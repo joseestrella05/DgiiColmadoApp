@@ -1,0 +1,117 @@
+@page "/reporte-dgii"
+@using DgiiColmadoApp.Models
+@using DgiiColmadoApp.Services
+@inject DgiiReportService ReportService
+
+<PageTitle>Reporte DGII</PageTitle>
+
+<h1>Reporte DGII para Colmado/Bodega</h1>
+<p class="mb-4">Registra aquí los datos básicos para preparar tu envío mensual.</p>
+
+<EditForm Model="model" OnValidSubmit="HandleValidSubmit" class="card p-4 shadow-sm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">Nombre del colmado</label>
+            <InputText class="form-control" @bind-Value="model.BusinessName" />
+            <ValidationMessage For="@(() => model.BusinessName)" />
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">RNC / Cédula</label>
+            <InputText class="form-control" @bind-Value="model.TaxId" />
+            <ValidationMessage For="@(() => model.TaxId)" />
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Período fiscal (YYYY-MM)</label>
+            <InputText class="form-control" @bind-Value="model.FiscalPeriod" placeholder="2026-04" />
+            <ValidationMessage For="@(() => model.FiscalPeriod)" />
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Ventas brutas (RD$)</label>
+            <InputNumber class="form-control" @bind-Value="model.GrossSales" />
+            <ValidationMessage For="@(() => model.GrossSales)" />
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">ITBIS cobrado (RD$)</label>
+            <InputNumber class="form-control" @bind-Value="model.ItbisCollected" />
+            <ValidationMessage For="@(() => model.ItbisCollected)" />
+        </div>
+
+        <div class="col-12">
+            <label class="form-label">Notas</label>
+            <InputTextArea class="form-control" @bind-Value="model.Notes" rows="3" />
+            <ValidationMessage For="@(() => model.Notes)" />
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-success">Guardar reporte</button>
+        </div>
+    </div>
+</EditForm>
+
+@if (!string.IsNullOrWhiteSpace(successMessage))
+{
+    <div class="alert alert-success mt-3">@successMessage</div>
+}
+
+<section class="mt-4">
+    <h2 class="h4">Reportes guardados</h2>
+
+    @if (records.Count == 0)
+    {
+        <p>No hay reportes todavía.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Negocio</th>
+                        <th>Período</th>
+                        <th>Ventas</th>
+                        <th>ITBIS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var record in records)
+                    {
+                        <tr>
+                            <td>@record.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@record.Data.BusinessName</td>
+                            <td>@record.Data.FiscalPeriod</td>
+                            <td>@record.Data.GrossSales.ToString("N2")</td>
+                            <td>@record.Data.ItbisCollected.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+@code {
+    private DgiiReport model = new();
+    private string? successMessage;
+    private IReadOnlyList<DgiiReportRecord> records = [];
+
+    protected override void OnInitialized()
+    {
+        records = ReportService.GetAll();
+    }
+
+    private void HandleValidSubmit()
+    {
+        ReportService.Add(model);
+        records = ReportService.GetAll();
+        successMessage = "Reporte guardado correctamente. Puedes usar estos datos para tu envío en DGII.";
+        model = new DgiiReport();
+    }
+}
