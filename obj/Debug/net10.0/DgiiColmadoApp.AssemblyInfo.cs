@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DgiiColmadoApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+dbeb98dc076ade8ac22313604a06685158296173")]
 [assembly: System.Reflection.AssemblyProductAttribute("DgiiColmadoApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DgiiColmadoApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

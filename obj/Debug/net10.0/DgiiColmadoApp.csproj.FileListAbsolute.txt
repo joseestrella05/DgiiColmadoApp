@@ -83,3 +83,4 @@
 /Users/josegabrielestrella/DgiiColmadoApp/obj/Debug/net10.0/DgiiColmadoApp.pdb
 /Users/josegabrielestrella/DgiiColmadoApp/obj/Debug/net10.0/DgiiColmadoApp.genruntimeconfig.cache
 /Users/josegabrielestrella/DgiiColmadoApp/obj/Debug/net10.0/ref/DgiiColmadoApp.dll
+/Users/josegabrielestrella/DgiiColmadoApp/obj/Debug/net10.0/DgiiColmadoApp.sourcelink.json

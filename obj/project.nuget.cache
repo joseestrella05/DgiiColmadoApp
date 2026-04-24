@@ -6,15 +6,5 @@
   "expectedPackageFiles": [
     "/Users/josegabrielestrella/.nuget/packages/microsoft.aspnetcore.app.internal.assets/10.0.6/microsoft.aspnetcore.app.internal.assets.10.0.6.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1900",
-      "level": "Warning",
-      "message": "Error occurred while getting package vulnerability data: Unable to load the service index for source https://api.nuget.org/v3/index.json.",
-      "projectPath": "/Users/josegabrielestrella/DgiiColmadoApp/DgiiColmadoApp.csproj",
-      "warningLevel": 1,
-      "filePath": "/Users/josegabrielestrella/DgiiColmadoApp/DgiiColmadoApp.csproj",
-      "targetGraphs": []
-    }
-  ]
+  "logs": []
 }
