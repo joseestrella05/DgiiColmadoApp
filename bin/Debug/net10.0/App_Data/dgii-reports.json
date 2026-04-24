@@ -1,0 +1,14 @@
+[
+  {
+    "Id": "291eba6d-6f07-4be6-b073-dec631c3713d",
+    "CreatedAt": "2026-04-24T03:45:33.33988Z",
+    "Data": {
+      "BusinessName": "comaldo denny",
+      "TaxId": "05600702317",
+      "FiscalPeriod": "2026-04",
+      "GrossSales": 63,
+      "ItbisCollected": 13,
+      "Notes": "kk"
+    }
+  }
+]
