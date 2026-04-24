@@ -2,6 +2,8 @@
 @rendermode InteractiveServer
 @using DgiiColmadoApp.Models
 @using DgiiColmadoApp.Services
+@using System.Globalization
+@using System.Text
 @inject DgiiReportService ReportService
 
 <PageTitle>Reporte DGII</PageTitle>
@@ -98,21 +100,117 @@
     }
 </section>
 
+<section class="mt-4 card p-4 shadow-sm">
+    <h2 class="h4">Reporte mensual consolidado</h2>
+    <p class="text-muted mb-3">Genera un resumen por período fiscal con totales listos para revisión.</p>
+
+    @if (availablePeriods.Count == 0)
+    {
+        <p class="mb-0">Aún no hay períodos para consolidar.</p>
+    }
+    else
+    {
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Período fiscal</label>
+                <InputSelect class="form-select" @bind-Value="selectedPeriod">
+                    @foreach (var period in availablePeriods)
+                    {
+                        <option value="@period">@period</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="col-md-3">
+                <button type="button" class="btn btn-primary w-100" @onclick="GenerateMonthlyReport">
+                    Generar reporte
+                </button>
+            </div>
+        </div>
+    }
+
+    @if (generatedSummary is not null)
+    {
+        <hr />
+        <h3 class="h5">Resultado del período @generatedSummary.FiscalPeriod</h3>
+        <p class="mb-2"><strong>Fecha de generación:</strong> @generatedSummary.GeneratedAt.ToString("yyyy-MM-dd HH:mm")</p>
+        <p class="mb-2"><strong>Registros incluidos:</strong> @generatedSummary.RecordsCount</p>
+        <p class="mb-2"><strong>Total ventas brutas:</strong> RD$ @generatedSummary.TotalSales.ToString("N2", CultureInfo.InvariantCulture)</p>
+        <p class="mb-2"><strong>Total ITBIS cobrado:</strong> RD$ @generatedSummary.TotalItbis.ToString("N2", CultureInfo.InvariantCulture)</p>
+        <p class="mb-3"><strong>Ventas netas estimadas:</strong> RD$ @generatedSummary.EstimatedNetSales.ToString("N2", CultureInfo.InvariantCulture)</p>
+
+        <a class="btn btn-outline-success"
+           href="@BuildCsvDownloadLink(generatedSummary)"
+           download="@($"reporte-dgii-{generatedSummary.FiscalPeriod}.csv")">
+            Descargar CSV del período
+        </a>
+    }
+</section>
+
 @code {
     private DgiiReport model = new();
     private string? successMessage;
     private IReadOnlyList<DgiiReportRecord> records = [];
+    private IReadOnlyList<string> availablePeriods = [];
+    private DgiiMonthlyReportSummary? generatedSummary;
+    private string? selectedPeriod;
 
     protected override void OnInitialized()
     {
         records = ReportService.GetAll();
+        availablePeriods = ReportService.GetAvailablePeriods();
+        selectedPeriod = availablePeriods.FirstOrDefault();
     }
 
     private void HandleValidSubmit()
     {
         ReportService.Add(model);
         records = ReportService.GetAll();
+        availablePeriods = ReportService.GetAvailablePeriods();
+        selectedPeriod ??= model.FiscalPeriod;
+        generatedSummary = ReportService.GetMonthlySummary(model.FiscalPeriod);
         successMessage = "Reporte guardado correctamente. Puedes usar estos datos para tu envío en DGII.";
         model = new DgiiReport();
+    }
+
+    private void GenerateMonthlyReport()
+    {
+        if (string.IsNullOrWhiteSpace(selectedPeriod))
+        {
+            generatedSummary = null;
+            return;
+        }
+
+        generatedSummary = ReportService.GetMonthlySummary(selectedPeriod);
+    }
+
+    private static string BuildCsvDownloadLink(DgiiMonthlyReportSummary summary)
+    {
+        var csv = new StringBuilder();
+        csv.AppendLine("Periodo,FechaRegistro,Negocio,RNC_Cedula,VentasBrutas,ITBIS,Notas");
+
+        foreach (var row in summary.Records)
+        {
+            csv.AppendLine(
+                $"{EscapeCsv(summary.FiscalPeriod)}," +
+                $"{row.CreatedAt:yyyy-MM-dd HH:mm}," +
+                $"{EscapeCsv(row.Data.BusinessName)}," +
+                $"{EscapeCsv(row.Data.TaxId)}," +
+                $"{row.Data.GrossSales.ToString(CultureInfo.InvariantCulture)}," +
+                $"{row.Data.ItbisCollected.ToString(CultureInfo.InvariantCulture)}," +
+                $"{EscapeCsv(row.Data.Notes ?? string.Empty)}");
+        }
+
+        csv.AppendLine();
+        csv.AppendLine($"TOTAL VENTAS,,,{string.Empty},{summary.TotalSales.ToString(CultureInfo.InvariantCulture)},,");
+        csv.AppendLine($"TOTAL ITBIS,,,{string.Empty},,{summary.TotalItbis.ToString(CultureInfo.InvariantCulture)},");
+        csv.AppendLine($"VENTAS NETAS ESTIMADAS,,,{string.Empty},{summary.EstimatedNetSales.ToString(CultureInfo.InvariantCulture)},,");
+
+        return $"data:text/csv;charset=utf-8,{Uri.EscapeDataString(csv.ToString())}";
+    }
+
+    private static string EscapeCsv(string value)
+    {
+        var escapedValue = value.Replace("\"", "\"\"");
+        return $"\"{escapedValue}\"";
     }
 }
